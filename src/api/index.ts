@@ -18,7 +18,7 @@ api.interceptors.request.use(
      * 以下代码为示例，在请求头里带上 token 信息
      */
     if (userStore.isLogin && request.headers) {
-      request.headers.Token = userStore.token
+      request.headers.Authorization = `Bearer ${userStore.token}`
     }
     // 是否将 POST 请求参数进行字符串化处理
     if (request.method === 'post') {

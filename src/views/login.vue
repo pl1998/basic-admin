@@ -31,17 +31,17 @@ const redirect = ref(route.query.redirect?.toString() ?? '/')
 // 登录
 const loginFormRef = ref<FormInstance>()
 const loginForm = ref({
-  account: localStorage.login_account || '',
+  email: localStorage.login_account || '',
   password: '',
   remember: !!localStorage.login_account,
 })
 const loginRules = ref<FormRules>({
-  account: [
-    { required: true, trigger: 'blur', message: '请输入用户名' },
+  email: [
+    { required: true, trigger: 'blur', message: '请输入邮箱' },
   ],
   password: [
     { required: true, trigger: 'blur', message: '请输入密码' },
-    { min: 6, max: 18, trigger: 'blur', message: '密码长度为6到18位' },
+    { min: 6, max: 20, trigger: 'blur', message: '密码长度为6到20位' },
   ],
 })
 function handleLogin() {
@@ -67,14 +67,14 @@ function handleLogin() {
 // 注册
 const registerFormRef = ref<FormInstance>()
 const registerForm = ref({
-  account: '',
+  email: '',
   captcha: '',
   password: '',
   checkPassword: '',
 })
 const registerRules = ref<FormRules>({
-  account: [
-    { required: true, trigger: 'blur', message: '请输入用户名' },
+  email: [
+    { required: true, trigger: 'blur', message: '请输入邮箱' },
   ],
   captcha: [
     { required: true, trigger: 'blur', message: '请输入验证码' },
@@ -112,13 +112,13 @@ function handleRegister() {
 // 重置密码
 const resetFormRef = ref<FormInstance>()
 const resetForm = ref({
-  account: localStorage.login_account || '',
+  email: localStorage.login_account || '',
   captcha: '',
   newPassword: '',
 })
 const resetRules = ref<FormRules>({
-  account: [
-    { required: true, trigger: 'blur', message: '请输入用户名' },
+  email: [
+    { required: true, trigger: 'blur', message: '请输入邮箱' },
   ],
   captcha: [
     { required: true, trigger: 'blur', message: '请输入验证码' },
@@ -141,7 +141,7 @@ function handleReset() {
 }
 
 function testAccount(account: string) {
-  loginForm.value.account = account
+  loginForm.value.email = account
   loginForm.value.password = '123456'
   handleLogin()
 }
@@ -162,8 +162,8 @@ function testAccount(account: string) {
           </h3>
         </div>
         <div>
-          <el-form-item prop="account">
-            <el-input v-model="loginForm.account" placeholder="用户名" text tabindex="1" autocomplete="on">
+          <el-form-item prop="email">
+            <el-input v-model="loginForm.email" placeholder="邮箱" text tabindex="1" autocomplete="on">
               <template #prefix>
                 <svg-icon name="ep:user" />
               </template>
@@ -188,18 +188,18 @@ function testAccount(account: string) {
         <el-button :loading="loading" type="primary" size="large" style="width: 100%;" @click.prevent="handleLogin">
           登录
         </el-button>
-        <div class="sub-link">
+        <!-- <div class="sub-link">
           <span class="text">还没有帐号?</span>
           <el-link type="primary" :underline="false" @click="formType = 'register'">
             创建新帐号
           </el-link>
-        </div>
+        </div> -->
         <div style="margin-top: 20px; margin-bottom: -20px; text-align: center;">
           <el-divider>演示账号一键登录</el-divider>
-          <el-button type="primary" size="small" plain @click="testAccount('admin')">
+          <!-- <el-button type="primary" size="small" plain @click="testAccount('admin')">
             admin
-          </el-button>
-          <el-button size="small" plain @click="testAccount('test')">
+          </el-button> -->
+          <el-button size="small" plain @click="testAccount('admin@gmail.com')">
             test
           </el-button>
         </div>
@@ -211,8 +211,8 @@ function testAccount(account: string) {
           </h3>
         </div>
         <div>
-          <el-form-item prop="account">
-            <el-input v-model="registerForm.account" placeholder="用户名" tabindex="1" autocomplete="on">
+          <el-form-item prop="email">
+            <el-input v-model="registerForm.email" placeholder="邮箱" tabindex="1" autocomplete="on">
               <template #prefix>
                 <svg-icon name="ep:user" />
               </template>
@@ -260,8 +260,8 @@ function testAccount(account: string) {
           </h3>
         </div>
         <div>
-          <el-form-item prop="account">
-            <el-input v-model="resetForm.account" placeholder="用户名" tabindex="1" autocomplete="on">
+          <el-form-item prop="email">
+            <el-input v-model="resetForm.email" placeholder="邮箱" tabindex="1" autocomplete="on">
               <template #prefix>
                 <svg-icon name="ep:user" />
               </template>

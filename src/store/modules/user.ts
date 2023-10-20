@@ -31,12 +31,16 @@ const useUserStore = defineStore(
     }) {
       // 通过 mock 进行登录
       const res = await apiUser.login(data)
-      localStorage.setItem('account', res.data.account)
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('failure_time', res.data.failure_time)
-      account.value = res.data.account
+      localStorage.setItem('token', res.data.access_token)
+      const times = Math.floor(Date.now() / 1000) + Number.parseInt(res.data.expires_in)
+      localStorage.setItem('failure_time', String(times))
       token.value = res.data.token
       failure_time.value = res.data.failure_time
+
+      // 获取用户信息
+      const userInfo = await apiUser.me({})
+      localStorage.setItem('email', userInfo.data.account)
+      account.value = res.data.account
     }
     // 登出
     async function logout(redirect = router.currentRoute.value.fullPath) {
@@ -48,6 +52,7 @@ const useUserStore = defineStore(
       failure_time.value = ''
       routeStore.removeRoutes()
       menuStore.setActived(0)
+      apiUser.logout()
       router.push({
         name: 'login',
         query: {

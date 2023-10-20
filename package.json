@@ -9,7 +9,6 @@
     "lint:tsc": "vue-tsc --noEmit",
     "lint:eslint": "eslint --cache --fix --no-ignore --no-error-on-unmatched-pattern --ext .ts,.tsx,.vue src/",
     "lint:stylelint": "stylelint src/**/*.{css,scss,vue} --cache --fix --allow-empty-input",
-    "postinstall": "simple-git-hooks && esno scripts/prepare.js",
     "preinstall": "npx only-allow pnpm"
   },
   "dependencies": {
@@ -73,9 +72,5 @@
     "vite-plugin-vue-inspector": "^4.0.0",
     "vite-plugin-vue-meta-layouts": "^0.3.1",
     "vue-tsc": "^1.8.19"
-  },
-  "simple-git-hooks": {
-    "pre-commit": "pnpm lint-staged",
-    "preserveUnused": true
   }
 }
