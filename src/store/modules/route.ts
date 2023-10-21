@@ -199,20 +199,14 @@ const useRouteStore = defineStore(
     }
     // 根据权限动态生成路由（后端获取）
     async function generateRoutesAtBack() {
-      routesRaw.value = formatBackRoutes(userStore.menus)
-      if (settingsStore.settings.app.enablePermission) {
-        userStore.getPermissions()
-      }
-      isGenerate.value = true
-
-      // await apiApp.routeList().then(async (res) => {
-      //   // 设置 routes 数据
-      //   routesRaw.value = formatBackRoutes(res.data)
-      //   if (settingsStore.settings.app.enablePermission) {
-      //     userStore.getPermissions()
-      //   }
-      //   isGenerate.value = true
-      // }).catch(() => {})
+      await apiApp.routeList().then(async (res) => {
+        // 设置 routes 数据
+        routesRaw.value = formatBackRoutes(res.data)
+        if (settingsStore.settings.app.enablePermission) {
+          userStore.getPermissions()
+        }
+        isGenerate.value = true
+      }).catch(() => {})
     }
     // 根据权限动态生成路由（文件系统生成）
     async function generateRoutesAtFilesystem(asyncRoutes: RouteRecordRaw[]) {

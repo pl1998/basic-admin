@@ -1,5 +1,8 @@
 import MultilevelMenuExample from './modules/multilevel.menu.example'
-
+import User from './modules/user'
+import Roles from './modules/role'
+import Menus from './modules/menu'
+import Log from './modules/log'
 import type { Menu } from '#/global'
 
 const menu: Menu.recordMainRaw[] = [
@@ -10,6 +13,10 @@ const menu: Menu.recordMainRaw[] = [
     },
     children: [
       MultilevelMenuExample,
+      User,
+      Roles,
+      Menus,
+      Log
     ],
   },
 ]

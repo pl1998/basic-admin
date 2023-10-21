@@ -5,36 +5,36 @@ defineOptions({
   name: 'BuyIt',
 })
 
-const isActived = ref(true)
+const isActived = ref(false)
 setTimeout(() => {
   isActived.value = false
 }, 5000)
 
 onMounted(() => {
-  ElNotification({
-    type: 'success',
-    title: '温馨提示',
-    dangerouslyUseHTMLString: true,
-    message: `
-      <p>当前访问的是<b>基础版</b> (Vue3)</p>
-      <p>你可以点<a href="https://fantastic-admin.gitee.io/pro-example/" target="_blank"><b>这里</b></a>访问专业版 (Vue3)</p>
-    `,
-    position: 'bottom-right',
-    duration: 5000,
-  })
+  // ElNotification({
+  //   type: 'success',
+  //   title: '温馨提示',
+  //   dangerouslyUseHTMLString: true,
+  //   message: `
+  //     <p>当前访问的是<b>基础版</b> (Vue3)</p>
+  //     <p>你可以点<a href="https://fantastic-admin.gitee.io/pro-example/" target="_blank"><b>这里</b></a>访问专业版 (Vue3)</p>
+  //   `,
+  //   position: 'bottom-right',
+  //   duration: 5000,
+  // })
 
-  setTimeout(() => {
-    ElNotification({
-      type: 'info',
-      title: '「 专业版限时优惠 」',
-      dangerouslyUseHTMLString: true,
-      message: `
-        <p>原价 1099.00 元，现价 <b style="font-size: 18px; color: #ff4400;">899.00</b> 元，更有超值优惠合集，立减 <b style="color: #ff4400;">799.00</b> 元，点击<a href="https://fantastic-admin.gitee.io/buy.html" target="_blank">查看详情</a>！</p>
-      `,
-      position: 'bottom-right',
-      duration: 0,
-    })
-  }, 0)
+  // setTimeout(() => {
+  //   ElNotification({
+  //     type: 'info',
+  //     title: '「 专业版限时优惠 」',
+  //     dangerouslyUseHTMLString: true,
+  //     message: `
+  //       <p>原价 1099.00 元，现价 <b style="font-size: 18px; color: #ff4400;">899.00</b> 元，更有超值优惠合集，立减 <b style="color: #ff4400;">799.00</b> 元，点击<a href="https://fantastic-admin.gitee.io/buy.html" target="_blank">查看详情</a>！</p>
+  //     `,
+  //     position: 'bottom-right',
+  //     duration: 0,
+  //   })
+  // }, 0)
 })
 
 function open(url: string) {
@@ -43,7 +43,7 @@ function open(url: string) {
 </script>
 
 <template>
-  <div class="buy-it" :class="{ actived: isActived }">
+  <!-- <div class="buy-it" :class="{ actived: isActived }">
     <div class="item" @click="open(`https://fantastic-admin.gitee.io/buy.html`)">
       <svg-icon name="fixed-right-buy" />
       <span class="title">购买<br>专业版</span>
@@ -60,7 +60,7 @@ function open(url: string) {
       <svg-icon name="fixed-right-chat" />
       <span class="title">技术<br>支持</span>
     </div>
-  </div>
+  </div> -->
 </template>
 
 <style lang="scss" scoped>

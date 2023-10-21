@@ -10,7 +10,7 @@ const globalSettingsDefault: RecursiveRequired<Settings.all> = {
     enablePermission: false,
     enableProgress: true,
     enableDynamicTitle: false,
-    routeBaseOn: 'frontend',
+    routeBaseOn: 'backend', //'frontend' | 'backend' | 'filesystem'
     enableAppSetting: false,
   },
   home: {

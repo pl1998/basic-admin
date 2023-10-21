@@ -11,6 +11,7 @@ import MockExample from './modules/mock.example'
 import JsxExample from './modules/jsx.example'
 import ExternalLinkExample from './modules/external.link.example'
 import EcologyExample from './modules/ecology.example'
+import Admin from './modules/admin'
 import type { Route } from '#/global'
 import useSettingsStore from '@/store/modules/settings'
 
@@ -85,6 +86,16 @@ const systemRoutes: RouteRecordRaw[] = [
 
 // 动态路由（异步路由、导航栏路由）
 const asyncRoutes: Route.recordMainRaw[] = [
+
+  {
+    meta: {
+      title: '系统',
+      icon: 'sidebar-default',
+    },
+    children: [
+      Admin
+    ],
+  },
   {
     meta: {
       title: '演示',
@@ -102,15 +113,15 @@ const asyncRoutes: Route.recordMainRaw[] = [
       ExternalLinkExample,
     ],
   },
-  {
-    meta: {
-      title: '生态',
-      icon: 'sidebar-ecology',
-    },
-    children: [
-      ...EcologyExample,
-    ],
-  },
+  // {
+  //   meta: {
+  //     title: '生态',
+  //     icon: 'sidebar-ecology',
+  //   },
+  //   children: [
+  //     ...EcologyExample,
+  //   ],
+  // },
 ]
 
 const constantRoutesByFilesystem = generatedRoutes.filter((item) => {
