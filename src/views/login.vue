@@ -60,7 +60,7 @@ function handleLogin() {
           router.push(redirect.value)
         })
       }).catch(() => {
-  
+
         loading.value = false
       })
     }
@@ -204,7 +204,7 @@ function testAccount(account: string) {
           <!-- <el-button type="primary" size="small" plain @click="testAccount('admin')">
             admin
           </el-button> -->
-          <el-button size="small" plain @click="testAccount('admin@gmail.com')">
+          <el-button size="small" plain @click="testAccount('test@gmail.com')">
             test
           </el-button>
         </div>
