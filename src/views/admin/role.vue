@@ -7,7 +7,7 @@
 import { reactive, watch, nextTick } from 'vue'
 import apiAdminRole from '@/api/modules/admin_role'
 import apiAdminMenu from '@/api/modules/admin_menu'
-import { getFilterParmas,isNumber } from '@/utils/helpers'
+import { getFilterParmas, isNumber } from '@/utils/helpers'
 import { ElMessage, ElTree } from 'element-plus'
 const elTreeRef = ref<InstanceType<typeof ElTree>>();
 const tableData = ref([])
@@ -16,8 +16,8 @@ const centerDialogVisible = ref(false)
 const tableLoading = ref(false)
 
 
-const leafKeys = ref([])
-const allKeys = ref([])
+const leafKeys = ref(<any>[])
+const allKeys = ref(<any>[])
 
 const formInline = reactive({
   loading: false,
@@ -35,20 +35,28 @@ const defaultProps = ref({
   label: "name",
   children: "children"
 })
-const defaultExpandedKeys = ref([])
+const defaultExpandedKeys = ref<any>([])
 const currentNodekey = ref([])
-const roles = ref({})
+
+interface rolesInterface {
+  id: number,
+  name: string,
+  menu: any[]
+}
+const roles = ref<rolesInterface>({
+  id: 0,
+  name: '',
+  menu: [] as any[]
+})
 const isShowTree = ref(true)
 const title = ref("权限编辑")
 function onSubmit() {
-  console.log(menusList)
   isShowTree.value = false
   defaultExpandedKeys.value = []
 
   centerDialogVisible.value = true
   title.value = '添加角色'
   isShowTree.value = true
-
 }
 
 watch(
@@ -56,10 +64,7 @@ watch(
   (newValue, oldValue) => {
     if (newValue.value == false) {
       defaultExpandedKeys.value = []
-
-      roles.value = {}
-      form.value.id = 0
-      form.value.name = ''
+      resetRole()
       title.value = '权限编辑'
     } else {
 
@@ -98,7 +103,6 @@ function handleEdit(index: number, row: any) {
     elTreeRef.value?.setCheckedKeys(leafKeys.value, true);
   });
   centerDialogVisible.value = true
-  roles.value = row
   form.value.id = row.id
   form.value.name = row.name
 }
@@ -113,7 +117,8 @@ function handleSubmit() {
     apiAdminRole.update({
       id: roles.value.id,
       menu: defaultExpandedKeys.value,
-      name: roles.value.name
+      name: roles.value.name,
+      status:0
     }).then((res) => {
       ElMessage({
         message: '更新成功',
@@ -121,11 +126,11 @@ function handleSubmit() {
       })
       centerDialogVisible.value = !centerDialogVisible.value
       defaultExpandedKeys.value = []
-      roles.value = {}
+      resetRole()
     }).catch(() => {
       centerDialogVisible.value = !centerDialogVisible.value
       defaultExpandedKeys.value = []
-      roles.value = {}
+      resetRole()
     })
   } else {
     if (form.value.name.length == 0 || form.value.name.length > 20) {
@@ -144,20 +149,32 @@ function handleSubmit() {
         })
         centerDialogVisible.value = !centerDialogVisible.value
         defaultExpandedKeys.value = []
-        roles.value = {}
+        resetRole()
         getList()
       }).catch(() => {
         centerDialogVisible.value = !centerDialogVisible.value
         defaultExpandedKeys.value = []
-        roles.value = {}
+        roles.value = {
+          id: 0,
+          name: '',
+          menu: [] as any[]
+        }
       })
     }
   }
 }
 
+function resetRole() {
+  roles.value = {
+    id: 0,
+    name: '',
+    menu: [] as any[]
+  }
+}
+
 // 翻页
-function pageChange(page:any) {
-  if(isNumber(page)) {
+function pageChange(page: any) {
+  if (isNumber(page)) {
     formInline.page = page
     getList()
   }
@@ -170,19 +187,19 @@ function getPermission() {
   })
 }
 
-function nodeChange(data: object, isSelect: any, isTree: any) {
+function nodeChange(data: any, isSelect: any, isTree: any) {
   const nodes = defaultExpandedKeys.value
   if (isSelect) {
     defaultExpandedKeys.value.push(data.id)
   } else {
-    defaultExpandedKeys.value = defaultExpandedKeys.value.filter((id) => {
+    defaultExpandedKeys.value = defaultExpandedKeys.value.filter((id:number) => {
       return id != data.id
     })
   }
 }
 
 function handleDelete(id: number, status: number) {
-  apiAdminRole.update({ id: id, status: status == 1 ? 0 : 1 }).then((res) => {
+  apiAdminRole.updateStatus({ id: id, status:(status === 1 ? 0 : 1) }).then((res) => {
     getList()
   })
 }

@@ -16,7 +16,7 @@ const userStore = useUserStore()
 // 模拟账号切换
 async function accountChange(val: any) {
   await userStore.login({
-    account: val,
+    email: val,
     password: '',
   })
   await userStore.getPermissions()

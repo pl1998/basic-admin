@@ -3,7 +3,7 @@ import api from '../index'
 export default {
   // 登录
   login: (data: {
-    account: string
+    email: string
     password: string
   }) => api.post('/login', data),
 

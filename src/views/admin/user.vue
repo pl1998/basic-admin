@@ -22,15 +22,32 @@ const formInline = reactive({
     total: 1,
 })
 
-const roleList = ref([])
+interface roleListInstance {
+    id: number
+    name: string
+}
+const roleList = ref<roleListInstance[]>([{
+    id: 0,
+    name: ""
+}])
 
-const form = ref({
+interface submitFormInstance {
+    id: number
+    name: string
+    email: string
+    password: string
+    password_confirmation: string
+    role: any[],
+}
+
+const form = ref<submitFormInstance>({
+    id: 0,
     email: '',
     name: '',
     password: '',
     password_confirmation: '',
-    role: [],
-    id: 0
+    role: [] as any[],
+
 })
 
 const title = ref('添加用户')
@@ -44,11 +61,10 @@ watch(
                 name: '',
                 password: '',
                 password_confirmation: '',
-                role: [],
+                role: <any>[{}],
                 id: 0
             }
         }
-
     },
     { deep: true }
 )
@@ -189,6 +205,10 @@ function handleEdit(row: any) {
     dialogVisible.value = true
 }
 
+function handleDelete(row: any) {
+
+}
+
 </script>
           
 <template>
@@ -230,7 +250,7 @@ function handleEdit(row: any) {
                     <template #default="scope">
                         <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
                         <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`"
-                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == 1 ? `启用` :
+                            @click="handleDelete(scope.row)">{{ scope.row.status == 1 ? `启用` :
                                 `禁用` }}</el-button>
                     </template>
                 </el-table-column>
