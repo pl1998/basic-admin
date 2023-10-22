@@ -27,4 +27,8 @@ export function filterNullAndEmptyValues(obj: object) {
 }
 
 export const methodArr = ["HEAD","GET","POST","PUT","PUTCH","DELETE","OPTIONS"];
-export const methodColorArr = ["","success","info","warning","warning","danger",""];
+export const methodColorArr = ["","success","warning","warning","warning","danger",""];
+
+export function isNumber(value:any) {
+    return typeof value === 'number' && isFinite(value);
+}

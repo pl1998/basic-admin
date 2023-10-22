@@ -4,20 +4,32 @@
   </route>
 
 <script lang="ts" setup>
-import { reactive, watch } from 'vue'
+import { reactive, watch, nextTick } from 'vue'
 import apiAdminRole from '@/api/modules/admin_role'
 import apiAdminMenu from '@/api/modules/admin_menu'
-import { getFilterParmas } from '@/utils/helpers'
-import { ElMessage } from 'element-plus'
+import { getFilterParmas,isNumber } from '@/utils/helpers'
+import { ElMessage, ElTree } from 'element-plus'
+const elTreeRef = ref<InstanceType<typeof ElTree>>();
 const tableData = ref([])
 const menusList = ref([])
 const centerDialogVisible = ref(false)
 const tableLoading = ref(false)
+
+
+const leafKeys = ref([])
+const allKeys = ref([])
+
 const formInline = reactive({
   loading: false,
   page: 1,
   page_size: 10,
   total: 1,
+})
+const form = ref({
+  id: 0,
+  name: "",
+  menu: [],
+  status: 0
 })
 const defaultProps = ref({
   label: "name",
@@ -26,18 +38,33 @@ const defaultProps = ref({
 const defaultExpandedKeys = ref([])
 const currentNodekey = ref([])
 const roles = ref({})
+const isShowTree = ref(true)
+const title = ref("权限编辑")
+function onSubmit() {
+  console.log(menusList)
+  isShowTree.value = false
+  defaultExpandedKeys.value = []
 
-const onSubmit = () => {
+  centerDialogVisible.value = true
+  title.value = '添加角色'
+  isShowTree.value = true
 
 }
+
 watch(
   () => centerDialogVisible,
   (newValue, oldValue) => {
     if (newValue.value == false) {
       defaultExpandedKeys.value = []
+
       roles.value = {}
+      form.value.id = 0
+      form.value.name = ''
+      title.value = '权限编辑'
+    } else {
+
     }
-    console.log(newValue.value)
+
   },
   { deep: true }
 )
@@ -52,53 +79,98 @@ function getList() {
   tableLoading.value = true
   let urlParams = getFilterParmas(formInline)
   apiAdminRole.list(urlParams).then((res) => {
-    console.log(res)
     tableData.value = res.data.list
     formInline.total = res.data.total
     tableLoading.value = false
   })
 }
 
+
 // 编辑
-function handleEdit(index, row) {
-  centerDialogVisible.value = !centerDialogVisible.value
+function handleEdit(index: number, row: any) {
   if (row.menus.length != 0) {
-    const menusId = row.menus.map((next) => {
+    row.menus.map((next: any) => {
+      leafKeys.value.push(next.id)
       defaultExpandedKeys.value.push(next.id)
     })
   }
+  nextTick(() => {
+    elTreeRef.value?.setCheckedKeys(leafKeys.value, true);
+  });
+  centerDialogVisible.value = true
   roles.value = row
+  form.value.id = row.id
+  form.value.name = row.name
 }
+
+
+
 
 // 提交权限节点
 function handleSubmit() {
-  console.log(defaultExpandedKeys)
-  apiAdminRole.update({
-    id: roles.value.id,
-    menu: defaultExpandedKeys.value,
-    name: roles.value.name
-  }).then((res) => {
-    ElMessage({
-      message: '更新成功',
-      type: 'success',
+
+  if (form.value.id != 0) {
+    apiAdminRole.update({
+      id: roles.value.id,
+      menu: defaultExpandedKeys.value,
+      name: roles.value.name
+    }).then((res) => {
+      ElMessage({
+        message: '更新成功',
+        type: 'success',
+      })
+      centerDialogVisible.value = !centerDialogVisible.value
+      defaultExpandedKeys.value = []
+      roles.value = {}
+    }).catch(() => {
+      centerDialogVisible.value = !centerDialogVisible.value
+      defaultExpandedKeys.value = []
+      roles.value = {}
     })
-    centerDialogVisible.value = !centerDialogVisible.value
-    defaultExpandedKeys.value = []
-    roles.value = {}
-  }).catch(() => {
-    centerDialogVisible.value = !centerDialogVisible.value
-    defaultExpandedKeys.value = []
-    roles.value = {}
-  })
+  } else {
+    if (form.value.name.length == 0 || form.value.name.length > 20) {
+      ElMessage({
+        message: '角色名称在1~20长度之间',
+        type: 'warning'
+      })
+    } else {
+      apiAdminRole.add({
+        menu: defaultExpandedKeys.value,
+        name: form.value.name
+      }).then((res) => {
+        ElMessage({
+          message: '添加角色成功',
+          type: 'success',
+        })
+        centerDialogVisible.value = !centerDialogVisible.value
+        defaultExpandedKeys.value = []
+        roles.value = {}
+        getList()
+      }).catch(() => {
+        centerDialogVisible.value = !centerDialogVisible.value
+        defaultExpandedKeys.value = []
+        roles.value = {}
+      })
+    }
+  }
+}
+
+// 翻页
+function pageChange(page:any) {
+  if(isNumber(page)) {
+    formInline.page = page
+    getList()
+  }
 }
 
 function getPermission() {
   apiAdminMenu.getPermission().then((res) => {
-    menusList.value = res.data
+    menusList.value = res.data.list
+    allKeys.value = res.data.ids
   })
 }
 
-function nodeChange(data, isSelect, isTree) {
+function nodeChange(data: object, isSelect: any, isTree: any) {
   const nodes = defaultExpandedKeys.value
   if (isSelect) {
     defaultExpandedKeys.value.push(data.id)
@@ -107,7 +179,12 @@ function nodeChange(data, isSelect, isTree) {
       return id != data.id
     })
   }
-  console.log(defaultExpandedKeys.value)
+}
+
+function handleDelete(id: number, status: number) {
+  apiAdminRole.update({ id: id, status: status == 1 ? 0 : 1 }).then((res) => {
+    getList()
+  })
 }
 
 
@@ -116,12 +193,9 @@ function nodeChange(data, isSelect, isTree) {
 <template>
   <div>
     <page-main>
-      角色管理
-    </page-main>
-    <page-main>
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item>
-          <el-button :icon="Plus" type="primary" @click="onSubmit">添加角色</el-button>
+          <el-button type="primary" @click="onSubmit">添加角色</el-button>
         </el-form-item>
       </el-form>
     </page-main>
@@ -139,22 +213,35 @@ function nodeChange(data, isSelect, isTree) {
         <el-table-column label="操作" fixed="right" width="240">
           <template #default="scope">
             <el-button size="small" @click="handleEdit(scope.$index, scope.row)" type="success">编辑权限</el-button>
-            <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`"
-              @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == 1 ? `启用` : `禁用` }}</el-button>
+            <el-popconfirm :title="`是否` + (scope.row.status == 1 ? `启用` : `禁用`) + `?`"
+              @confirm="handleDelete(scope.row.id, scope.row.status)">
+              <template #reference>
+                <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`">{{ scope.row.status == 1 ?
+                  `启用` : `禁用` }}</el-button>
+              </template>
+            </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
       <div class="el-row">
-        <el-pagination background layout="prev, pager, next" :total="formInline.total" />
+        <el-pagination background layout="prev, pager, next" :total="formInline.total" @current-change="pageChange" />
       </div>
     </page-main>
 
-    <el-dialog v-model="centerDialogVisible" title="权限编辑" width="30%" align-center>
-
-      <el-tree :data="menusList" show-checkbox node-key="id" @check-change="nodeChange" :current-node-key="currentNodekey"
-        :default-checked-keys="defaultExpandedKeys" default-expand-all="true" check-strictly="true"
-        :props="defaultProps" />
-
+    <el-dialog v-model="centerDialogVisible" :title="title" width="40%" align-center>
+      <el-form :model="form" label-width="220px" ref="formRef">
+        <el-form-item label="名称" prop="name">
+          <el-input v-model="form.name" :rules="[
+            { required: true, message: '名称不能为空' },
+            { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
+          ]" />
+        </el-form-item>
+        <el-form-item label="权限" prop="menu">
+          <el-tree ref="elTreeRef" :data="menusList" show-checkbox node-key="id" @check-change="nodeChange"
+            :default-checked-keys="defaultExpandedKeys" :default-expand-all="true" :check-strictly="true"
+            :props="defaultProps" />
+        </el-form-item>
+      </el-form>
       <template #footer>
         <span class="dialog-footer">
           <el-button @click="centerDialogVisible = false">

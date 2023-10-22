@@ -6,8 +6,8 @@
 <script lang="ts" setup>
 import { reactive, watch } from 'vue'
 import apiAdminMenu from '@/api/modules/admin_menu'
-import { getFilterParmas, methodArr, methodColorArr } from '@/utils/helpers'
-import type { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { getFilterParmas, methodArr, methodColorArr, isNumber } from '@/utils/helpers'
+import { FormInstance, FormRules, ElMessage } from 'element-plus'
 
 import {
     Search,
@@ -54,7 +54,7 @@ const formInline = reactive({
     type: '',
     loading: false,
     page: 1,
-    page_size: 1000,
+    page_size: 100,
     total: 1,
     method: ""
 })
@@ -70,6 +70,7 @@ interface RuleForm {
     route_name: string,
     icon: string
     method: number
+    id: number
 }
 
 const form = ref<RuleForm>({
@@ -78,18 +79,26 @@ const form = ref<RuleForm>({
     icon: "",
     route_name: "",
     route_path: "",
-    component: "",
+    component: "Layout",
     sort: 0,
     hidden: 0,
     type: 0,
-    method: 1
+    method: 1,
+    id: 0
 })
 
 
+const deleteVisible = ref(false)
+
+
 const checkRouteType = (rule: any, value: any, callback: any) => {
+    if (form.value.parent_id == 0) {
+        callback()
+    }
     if (form.value.type == 0 && (value == '' || value == null || value == undefined)) {
         return callback(new Error('web路由' + rule + '不能为空'))
     }
+    callback()
 }
 
 const rules = reactive<FormRules<RuleForm>>({
@@ -106,30 +115,30 @@ const rules = reactive<FormRules<RuleForm>>({
 
     ],
     hidden: [
-        { required: true, message: '请选择是否隐藏', trigger: 'blur' },
+        { required: true, message: '请选择是否隐藏', trigger: 'change' },
         // { type: "number", message: 'hidden应该是integer类型', trigger: 'blur' },
     ],
     type: [
-        { required: true, message: '请选择路由类型', trigger: 'blur' },
+        { required: true, message: '请选择路由类型', trigger: 'change' },
         // { type: "number", message: 'type应该是number类型', trigger: 'blur' },
     ],
     method: [
-        { required: true, message: '请选择请求方式', trigger: 'blur' },
+        { required: true, message: '请选择请求方式', trigger: 'change' },
         // { type: "integer", message: 'method应该是number类型', trigger: 'blur' },
     ],
     route_name: [
         { type: "string", message: '应该是字符串类型', trigger: 'blur' },
     ],
     route_path: [
-        { type: "string", message: '应该是字符串类型', trigger: 'blur' },
-        { required: true, message: '请输入路由地址', trigger: 'blur' },
+        { required: true, message: '请输入请求地址', trigger: 'blur' },
     ],
     component: [
         { type: "string", message: '应该是字符串类型', trigger: 'blur' },
-        { validator: checkRouteType, message: 'web路由应该填写组件名称 基础组件[Loyout]', trigger: 'blur' },
+        { validator: checkRouteType, message: 'web路由应该填写组件名称', trigger: 'blur' },
     ],
     icon: [
-        { type: "string", message: '应该是字符串类型', trigger: 'blur' }
+        { type: "string", message: '应该是字符串类型', trigger: 'blur' },
+
     ],
 })
 
@@ -143,20 +152,19 @@ onMounted(() => {
 })
 function getMenuList() {
     apiAdminMenu.getPermission().then((res) => {
-        var keys = res.data.length
-        res.data[keys] = {
+        var keys = res.data.list.length
+        res.data.list[keys] = {
             id: 0,
             name: '顶级'
         }
-        menuList.value = res.data
-        console.log(menuList.value, 'test')
+        menuList.value =res.data.list
     })
+    console.log(menuList)
 }
 function getList() {
     tableLoading.value = true
     let urlParams = getFilterParmas(formInline)
     apiAdminMenu.list(urlParams).then((res) => {
-        console.log(res)
         tableData.value = res.data.list
         formInline.total = res.data.total
         tableLoading.value = false
@@ -177,6 +185,7 @@ watch(
                 hidden: 0,
                 type: 0,
                 method: 1,
+                id: 0,
             })
         }
 
@@ -185,47 +194,87 @@ watch(
 )
 
 
-function openCreateView() {
-    dialogVisible.value = true
 
-}
-
-const checkMenusType = (rule: any, value: any, callback: any) => {
-    console.log(rule, value)
-    if (!value) {
-        return callback(new Error('Please input the age'))
-    }
-}
-const ruleFormRef = ref({})
+const ruleFormRef = ref<FormInstance>()
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
     await formEl.validate((valid, fields) => {
         if (valid) {
             console.log('submit!')
-            apiAdminMenu.add(form.value).then((res) => {
-                dialogVisible.value = false
-                getList()
-                isCreateSuccess.value = true
-                setTimeout(() => {
-                    isCreateSuccess.value = false
-                }, 5000)
-            })
+            if (form.value.id != 0) {
+                apiAdminMenu.update(form.value).then((res) => {
+                    dialogVisible.value = false
+                    getList()
+                    isCreateSuccess.value = true
+                    setTimeout(() => {
+                        isCreateSuccess.value = false
+                    }, 5000)
+                })
+            } else {
+                apiAdminMenu.add(form.value).then((res) => {
+                    dialogVisible.value = false
+                    getList()
+                    isCreateSuccess.value = true
+                    setTimeout(() => {
+                        isCreateSuccess.value = false
+                    }, 5000)
+                })
+            }
+
 
         } else {
             console.log('error submit!', fields)
+            ElMessage({
+                message: "验证不通过",
+                type: "warning"
+            })
         }
     })
 }
+// 打开编辑
+function handleEdit(index: any, row: any) {
+    form.value = <RuleForm>({
+        parent_id: row.parent_id,
+        name: row.name,
+        icon: row.icon,
+        route_name: row.route_name,
+        route_path: row.route_path,
+        component: row.component,
+        sort: row.sort,
+        hidden: row.hidden,
+        type: row.type,
+        method: row.method,
+        id: row.id,
+    })
+    dialogVisible.value = true
+}
 
+function deleteMenu(id: number) {
+    apiAdminMenu.delete(id).then(() => {
+        ElMessage({
+            message: '删除成功！',
+            'type': 'success'
+        })
+        getList()
+    })
+}
 
+// 翻页
+function pageChange(page: any) {
+    if (isNumber(page)) {
+        formInline.page = page
+        getList()
+    }
+}
 
 </script>
           
 <template>
     <div>
+        <el-alert title="添加更新成功" type="success" v-if="isCreateSuccess" />
         <page-main>
-            <el-alert title="添加成功" type="success" v-if="isCreateSuccess" />
+
             <el-form :inline="true" :model="formInline" class="demo-form-inline">
                 <el-form-item label="名称">
                     <el-input v-model="formInline.name" placeholder="名称" clearable />
@@ -244,7 +293,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                 <el-form-item>
                     <el-button v-loading="formInline.loading" type="primary" :icon="Search" @click="onSubmit">搜索</el-button>
                     <el-button v-loading="formInline.loading" type="primary" :icon="Plus"
-                        @click="openCreateView">添加</el-button>
+                        @click="dialogVisible = true">添加</el-button>
                 </el-form-item>
             </el-form>
         </page-main>
@@ -252,7 +301,7 @@ const submitForm = async (formEl: FormInstance | undefined) => {
             <el-table v-loading="tableLoading" :data="tableData" style="width: 100%; margin-bottom: 20px" row-key="id"
                 border default-expand-all lazy :load="load"
                 :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
-                <el-table-column prop="name" label="名称" fixed="left" width="150" />
+                <el-table-column prop="name" label="名称" width="150" />
                 <el-table-column prop="icon" label="图标" width="150">
                     <template #default="scope">
                         <svg-icon :name="scope.row.icon" />
@@ -264,14 +313,14 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                 <el-table-column prop="sort" label="排序" sortable width="60" />
                 <el-table-column prop="hidden" label="是否隐藏" width="100">
                     <template #default="scope">
-                        <el-tag :type="scope.row.hidden == 0 ? `success` : `waring`" class="ml-2" effect="light">
+                        <el-tag :type="scope.row.hidden == 0 ? `success` : `danger`" class="ml-2" effect="dark">
                             {{ scope.row.hidden == 0 ? `正常` : `隐藏` }}
                         </el-tag>
                     </template>
                 </el-table-column>
                 <el-table-column prop="type" label="菜单类型" width="100">
                     <template #default="scope">
-                        <el-tag :type="scope.row.type == 1 ? `waring` : `success`" class="ml-2" effect="dark">
+                        <el-tag :type="scope.row.type == 1 ? `warning` : `success`" class="ml-2" effect="dark">
                             {{ scope.row.type == 1 ? `Api` : `Web` }}
                         </el-tag>
                     </template>
@@ -287,17 +336,25 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                 <el-table-column label="操作" fixed="right" width="140">
                     <template #default="scope">
                         <el-button size="small" type="primary" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
-                        <el-button size="small" type="danger" @click="handleDelete(scope.$index, scope.row)">刪除</el-button>
+                        <el-popconfirm title="是否确定删除？" @confirm="deleteMenu(scope.row.id)">
+                            <template #reference>
+                                <el-button size="small" type="danger">删除</el-button>
+                            </template>
+                        </el-popconfirm>
+
                     </template>
                 </el-table-column>
             </el-table>
             <div class="el-row">
-                <el-pagination background layout="prev, pager, next" :total="formInline.total" />
+                <el-pagination background layout="prev, pager, next" :total="formInline.total" @current-change="pageChange"
+                    :default-page-size="formInline.page_size" :page-sizes="[100, 200, 300]" />
             </div>
         </page-main>
 
         <!-- 添加菜单 -->
         <el-dialog v-model="dialogVisible" title="添加菜单&接口" width="50%">
+            <el-alert title="添加顶级web路由时，必须要添加子路由！二级路由请求路径必须带 '/' 子级不用" type="success" :closable="false" />
+            <br />
             <el-form :model="form" label-width="120px" ref="ruleFormRef" :rules="rules">
                 <el-form-item label="父级ID" prop="parent_id">
                     <el-tree-select :props="defaultProps" node-key="id" :current-node-key="form.parent_id"

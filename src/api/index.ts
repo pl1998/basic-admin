@@ -39,6 +39,15 @@ api.interceptors.response.use(
      * 请求出错时 error 会返回错误信息
      */
     if (response.status === 200) {
+
+      if (response.data.status == 401) {
+        ElMessage({
+          message: "没权限访问",
+          type: 'error',
+        })
+        return Promise.resolve(response.data)
+      }
+
       if (response.data.status !== 200) {
         // 这里做错误提示，如果使用了 element plus 则可以使用 Message 进行提示
         // ElMessage.error(options)

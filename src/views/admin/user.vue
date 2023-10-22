@@ -4,11 +4,15 @@
     </route>
 
 <script lang="ts" setup>
-import { reactive } from 'vue'
+import { reactive, watch } from 'vue'
 import apiAdminUser from '@/api/modules/admin_user'
-import { getFilterParmas } from '@/utils/helpers'
+import apiAdminRole from '@/api/modules/admin_role'
+import { getFilterParmas, isNumber } from '@/utils/helpers'
+import type { FormInstance, FormRules, ElMessage } from 'element-plus'
+const ruleFormRef = ref<FormInstance>()
 const tableData = ref([])
 const tableLoading = ref(false)
+const dialogVisible = ref(false)
 const formInline = reactive({
     email: '',
     name: '',
@@ -18,13 +22,109 @@ const formInline = reactive({
     total: 1,
 })
 
+const roleList = ref([])
+
+const form = ref({
+    email: '',
+    name: '',
+    password: '',
+    password_confirmation: '',
+    role: [],
+    id: 0
+})
+
+const title = ref('添加用户')
+
+watch(
+    () => dialogVisible,
+    (newValue, oldValue) => {
+        if (newValue.value == false) {
+            form.value = {
+                email: '',
+                name: '',
+                password: '',
+                password_confirmation: '',
+                role: [],
+                id: 0
+            }
+        }
+
+    },
+    { deep: true }
+)
+
+
 const onSubmit = () => {
     getList()
 }
 
 onMounted(() => {
     getList()
+    getAllRole()
 })
+
+function getAllRole() {
+    apiAdminRole.getAllRole().then((res) => {
+        roleList.value = res.data
+    })
+}
+
+
+const checkPassword = (rule: any, value: any, callback: any) => {
+    if (form.value.id == 0) {
+        if (form.value.password.length < 6 && form.value.password.length > 20) {
+            return callback(new Error('密码应该在6~12位之间'))
+        }
+        if (form.value.password_confirmation.length < 6 && form.value.password_confirmation.length > 20) {
+            return callback(new Error('重复密码应该在6~12位之间'))
+        }
+        if (form.value.password != form.value.password_confirmation) {
+            return callback(new Error('两次输入密码不一致'))
+        }
+    } else {
+        if (form.value.password == '' || form.value.password == null) {
+            callback()
+        }
+        if (form.value.password.length < 6 && form.value.password.length > 20) {
+            return callback(new Error('密码应该在6~12位之间'))
+        }
+        if (form.value.password != form.value.password_confirmation) {
+            return callback(new Error('两次输入密码不一致'))
+        }
+    }
+    callback()
+}
+const rules = reactive<FormRules<typeof form>>({
+    name: [
+        {
+            required: true,
+            message: '请输入你的账号昵称',
+            trigger: 'blur',
+        },
+        { min: 1, max: 20, message: '长度在1~20', trigger: 'blur' },
+    ],
+    password: [
+        { validator: checkPassword, message: '密码长度在长度在6~20', trigger: 'blur' },
+    ],
+    password_confirmation: [
+        { validator: checkPassword, message: '密码长度在长度在6~20', trigger: 'blur' },
+    ],
+    email: [
+        {
+            required: true,
+            message: '请输入你的邮箱地址',
+            trigger: 'blur',
+        },
+        {
+            type: 'email',
+            message: '请输入邮箱',
+            trigger: ['blur', 'change'],
+        },
+    ]
+})
+
+
+
 
 function getList() {
     tableLoading.value = true
@@ -37,6 +137,57 @@ function getList() {
     })
 }
 
+
+
+const submitForm = (formEl: FormInstance | undefined) => {
+    if (form.value.id != 0) {
+        apiAdminUser.update(form.value).then((res) => {
+            dialogVisible.value = false
+            getList()
+            if (res.status == 0) {
+                alert('添加失败')
+            }
+        })
+    } else {
+        if (!formEl) return
+        formEl.validate((valid) => {
+            if (valid) {
+                console.log('submit!')
+                apiAdminUser.add(form.value).then((res) => {
+
+                    dialogVisible.value = false
+                    getList()
+                    if (res.status == 0) {
+                        alert('添加失败')
+                    }
+                })
+            } else {
+                console.log('error submit!')
+                return false
+            }
+        })
+    }
+}
+
+
+// 翻页
+function pageChange(page: any) {
+    if (isNumber(page)) {
+        formInline.page = page
+        getList()
+    }
+}
+
+function handleEdit(row: any) {
+    row.roles.map((res: { id: number }) => {
+        form.value.role.push(res.id)
+    })
+    form.value.id = row.id
+    form.value.email = row.email
+    form.value.name = row.name
+    title.value = '编辑用户信息'
+    dialogVisible.value = true
+}
 
 </script>
           
@@ -52,6 +203,7 @@ function getList() {
                 </el-form-item>
                 <el-form-item>
                     <el-button v-loading="formInline.loading" type="primary" @click="onSubmit">搜索</el-button>
+                    <el-button type="primary" @click="dialogVisible = true">添加用户</el-button>
                 </el-form-item>
             </el-form>
         </page-main>
@@ -76,16 +228,43 @@ function getList() {
                 </el-table-column>
                 <el-table-column label="操作" fixed="right" width="140">
                     <template #default="scope">
-                        <el-button size="small" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
+                        <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
                         <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`"
-                            @click="handleDelete(scope.$index, scope.row)">{{scope.row.status == 1 ? `启用` : `禁用`}}</el-button>
+                            @click="handleDelete(scope.$index, scope.row)">{{ scope.row.status == 1 ? `启用` :
+                                `禁用` }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
             <div class="el-row">
-                <el-pagination background layout="prev, pager, next" :total="formInline.total" />
+                <el-pagination background layout="prev, pager, next" :total="formInline.total"
+                    @current-change="pageChange" />
             </div>
         </page-main>
+        <el-dialog v-model="dialogVisible" :title="title" width="40%" style="max-width: 760px">
+            <el-form label-width="100px" :model="form" style="max-width: 460px" ref="ruleFormRef" :rules="rules">
+                <el-form-item label="账号昵称" prop="name">
+                    <el-input v-model="form.name" />
+                </el-form-item>
+                <el-form-item label="邮箱" prop="email">
+                    <el-input v-model="form.email" />
+                </el-form-item>
+                <el-form-item label="密码" prop="password">
+                    <el-input v-model="form.password" type="password" />
+                </el-form-item>
+                <el-form-item label="二次确认密码" prop="password_confirmation">
+                    <el-input v-model="form.password_confirmation" type="password" />
+                </el-form-item>
+                <el-form-item label="角色" prop="role">
+                    <el-select v-model="form.role" multiple placeholder="Select" style="width: 240px">
+                        <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-button type="primary" @click="submitForm(ruleFormRef)">提交</el-button>
+                    <el-button @click="dialogVisible = false">取消</el-button>
+                </el-form-item>
+            </el-form>
+        </el-dialog>
     </div>
 </template>
 <style lang="scss" scoped>
