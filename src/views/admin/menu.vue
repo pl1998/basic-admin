@@ -269,7 +269,7 @@ function pageChange(page: any) {
 }
 
 </script>
-          
+
 <template>
     <div>
         <el-alert title="添加更新成功" type="success" v-if="isCreateSuccess" />
@@ -333,7 +333,7 @@ function pageChange(page: any) {
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="添加时间" sortable width="180" />
-                <el-table-column label="操作" fixed="right" width="140">
+                <el-table-column label="操作" fixed="right" width="200">
                     <template #default="scope">
                         <el-button size="small" type="primary" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                         <el-popconfirm title="是否确定删除？" @confirm="deleteMenu(scope.row.id)">
