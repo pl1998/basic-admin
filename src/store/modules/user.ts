@@ -28,7 +28,7 @@ const useUserStore = defineStore(
 
     // 登录
     async function login(data: {
-      account: string
+      email: string
       password: string
     }) {
       const res = await apiUser.login(data)

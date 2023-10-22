@@ -327,7 +327,7 @@ function pageChange(page: any) {
                 </el-table-column>
                 <el-table-column prop="method" label="请求类型" width="100">
                     <template #default="scope">
-                        <el-tag :type="methodColorArr[scope.row.method]" class="ml-2" effect="dark">
+                        <el-tag :type="methodColorArr[scope.row.method].type" class="ml-2" effect="dark">
                             {{ methodArr[scope.row.method] ?? `` }}
                         </el-tag>
                     </template>
