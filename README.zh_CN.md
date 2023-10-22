@@ -30,6 +30,7 @@ English | [简体中文](./README.zh_CN.md)
 ```shell
 git clone https://github.com/pltrue/basic.git
 cd basic
+git checkout el-admin-master
 ```
 
 
