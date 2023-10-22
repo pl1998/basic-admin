@@ -1,3 +1,4 @@
+import {ElMessage} from "element-plus";
 import useRouteStore from './route'
 import useMenuStore from './menu'
 import router from '@/router'
@@ -32,11 +33,19 @@ const useUserStore = defineStore(
       password: string
     }) {
       const res = await apiUser.login(data)
-      localStorage.setItem('token', res.data.access_token)
-      const times = Math.floor(Date.now() / 1000) + Number.parseInt(res.data.expires_in)
-      localStorage.setItem('failure_time', String(times))
-      token.value = res.data.access_token
-      failure_time.value = times
+      if(res.status ==0 ) {
+        ElMessage({
+          message:'登录失败~账号密码错误',
+          type:"warning"
+        })
+      }else{
+        localStorage.setItem('token', res.data.access_token)
+        const times = Math.floor(Date.now() / 1000) + Number.parseInt(res.data.expires_in)
+        localStorage.setItem('failure_time', String(times))
+        token.value = res.data.access_token
+        failure_time.value = times
+      }
+
     }
 
     async function me() {
