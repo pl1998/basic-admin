@@ -8,3 +8,4 @@ dist-ssr
 src/assets/sprites/*.*
 !src/assets/sprites/.gitkeep
 public/icons
+.idea

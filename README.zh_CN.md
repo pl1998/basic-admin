@@ -6,25 +6,26 @@
 
 <p>
 <a href="https://packagist.org/packages/pl1998/el-admin"><img src="https://img.shields.io/badge/vue3+-blue" /></a>
+
 </p>
 
 ## About ElAdmin
 
-[English](./README.md) | 简体中文
+English | [简体中文](./README.zh_CN.md)
 
 ### 简介
 
-> This is a Web front-end skeleton provided by the `El-admin` package, which has implemented the rights management module
+> 这是 `El-admin `包提供的一个Web前端骨架，已实现了权限管理模块
 
 
-### Must
+### 依赖
 * Vue  >= 3.0
 * Vite
 * Vue-router
 * TypeScript
 * Pinia
 
-### Installed
+### 安装
 
 ```shell
 git clone https://github.com/pltrue/basic.git
@@ -32,7 +33,7 @@ cd basic
 ```
 
 
-### Config Update
+###  配置修改
 
 > `VITE_APP_API_BASEURL` 改成后端项目地址
 
@@ -49,20 +50,20 @@ VITE_OPEN_PROXY = false
 
 ```
 
-### Install && Run
+### 启动
 ```shell
 npm install -g pnpm
 pnpm install
 pnpm run dev
 ```
 
-### Official document
+### 官方文档
 
 https://fantastic-admin.gitee.io/guide/ready.html
 
-## Thanks
+## 鸣谢
 
-> The front-end skeleton project is based on [fantastic-admin project](https://fantastic-admin.gitee.io/) and connects to the back-end interface to implement back-end control permission management. Thank you very much for the developers of the project, the use of the project can be very convenient to develop back-end management system, the project provides excellent documentation ~, is a good set of front-end solution!
+> 前端骨架项目是基于[fantastic-admin项目](https://fantastic-admin.gitee.io/)的基础上，接入的后端接口，实现了后端控制权限管理。非常感谢该项目的开发人员，使用该项目可以非常便捷的开发后端管理系统，该项目提供了优秀的使用文档~，是一套不错的前端中台解决方法！
 
 ## License
 MIT License
