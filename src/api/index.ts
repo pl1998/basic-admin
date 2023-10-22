@@ -47,14 +47,12 @@ api.interceptors.response.use(
         })
         return Promise.resolve(response.data)
       }
-
       if (response.data.status !== 200) {
         // 这里做错误提示，如果使用了 element plus 则可以使用 Message 进行提示
-        // ElMessage.error(options)
+        ElMessage.warning(response.data.message)
         return Promise.reject(response.data)
       }
-    }
-    else {
+    } else {
       useUserStore().logout()
     }
     return Promise.resolve(response.data)
