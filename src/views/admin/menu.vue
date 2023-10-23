@@ -8,6 +8,7 @@ import { reactive, watch } from 'vue'
 import apiAdminMenu from '@/api/modules/admin_menu'
 import { getFilterParmas, methodArr, methodColorArr, isNumber } from '@/utils/helpers'
 import { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { Check, Close } from '@element-plus/icons-vue'
 
 import {
     Search,
@@ -157,7 +158,7 @@ function getMenuList() {
             id: 0,
             name: '顶级'
         }
-        menuList.value =res.data.list
+        menuList.value = res.data.list
     })
     console.log(menuList)
 }
@@ -199,26 +200,33 @@ const ruleFormRef = ref<FormInstance>()
 
 const submitForm = async (formEl: FormInstance | undefined) => {
     if (!formEl) return
+
     await formEl.validate((valid, fields) => {
         if (valid) {
             console.log('submit!')
             if (form.value.id != 0) {
                 apiAdminMenu.update(form.value).then((res) => {
-                    dialogVisible.value = false
-                    getList()
-                    isCreateSuccess.value = true
-                    setTimeout(() => {
-                        isCreateSuccess.value = false
-                    }, 5000)
+                    if (res.status === 200) {
+                        dialogVisible.value = false
+                        getList()
+                        isCreateSuccess.value = true
+                        setTimeout(() => {
+                            isCreateSuccess.value = false
+                        }, 5000)
+                        getMenuList()
+                    }
                 })
             } else {
                 apiAdminMenu.add(form.value).then((res) => {
-                    dialogVisible.value = false
-                    getList()
-                    isCreateSuccess.value = true
-                    setTimeout(() => {
-                        isCreateSuccess.value = false
-                    }, 5000)
+                    if (res.status === 200) {
+                        dialogVisible.value = false
+                        getList()
+                        isCreateSuccess.value = true
+                        setTimeout(() => {
+                            isCreateSuccess.value = false
+                        }, 5000)
+
+                    }
                 })
             }
 
@@ -280,13 +288,13 @@ function pageChange(page: any) {
                     <el-input v-model="formInline.name" placeholder="名称" clearable />
                 </el-form-item>
                 <el-form-item label="类型">
-                    <el-select v-model="formInline.type" placeholder="路由类型">
+                    <el-select v-model="formInline.type" clearable placeholder="路由类型">
                         <el-option label="Web(前端)" value="0" />
                         <el-option label="Api(后端)" value="1" />
                     </el-select>
                 </el-form-item>
                 <el-form-item label="请求方式">
-                    <el-select v-model="formInline.method" placeholder="路由类型">
+                    <el-select v-model="formInline.method" clearable placeholder="路由类型">
                         <el-option v-for="(value, key) in methodArr" :key="key" :label="value" :value="key" />
                     </el-select>
                 </el-form-item>
@@ -391,7 +399,8 @@ function pageChange(page: any) {
                     <el-input v-model="form.sort" />
                 </el-form-item>
                 <el-form-item label="是否隐藏" prop="hidden">
-                    <el-switch v-model="form.hidden" />
+                    <el-switch v-model="form.hidden" active-value="1" inactive-value="0" :active-icon="Check"
+                        :inactive-icon="Close" />
                 </el-form-item>
                 <el-form-item label="请求方式" prop="method">
                     <el-radio-group v-model="form.method" placeholder="路由类型">
