@@ -22,7 +22,7 @@ export function getFilterParmas(params: any | object): string {
 export function getFilterObject(obj: any): object {
 
     for (const key in obj) {
-        if (obj[key] === null || obj[key] === undefined ||  obj[key]=="") {
+        if (obj[key] === null || obj[key] === undefined) {
             delete obj[key];
         } else if (typeof obj[key] === 'object' && Object.keys(obj[key]).length === 0) {
             delete obj[key];

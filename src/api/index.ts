@@ -41,10 +41,10 @@ api.interceptors.response.use(
     if (response.status === 200) {
       if (response.data.status == 401) {
         ElMessage({
-          message: '没权限访问',
+          message: '该账号没权限访问该操作',
           type: 'error',
         })
-        return Promise.resolve(response.data)
+        return Promise.reject(response.data)
       }
       if (response.data.status !== 200) {
         // 这里做错误提示，如果使用了 element plus 则可以使用 Message 进行提示
