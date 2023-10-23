@@ -6,7 +6,7 @@
 <script lang="ts" setup>
 import { reactive, watch } from 'vue'
 import apiAdminMenu from '@/api/modules/admin_menu'
-import { getFilterParmas, methodArr, methodColorArr, isNumber } from '@/utils/helpers'
+import { getFilterParmas, methodArr, methodColorArr, isNumber, filterNullAndEmptyValues } from '@/utils/helpers'
 import { FormInstance, FormRules, ElMessage } from 'element-plus'
 import { Check, Close } from '@element-plus/icons-vue'
 
@@ -135,7 +135,6 @@ const rules = reactive<FormRules<RuleForm>>({
     ],
     component: [
         { type: "string", message: '应该是字符串类型', trigger: 'blur' },
-        { validator: checkRouteType, message: 'web路由应该填写组件名称', trigger: 'blur' },
     ],
     icon: [
         { type: "string", message: '应该是字符串类型', trigger: 'blur' },
@@ -205,7 +204,9 @@ const submitForm = async (formEl: FormInstance | undefined) => {
         if (valid) {
             console.log('submit!')
             if (form.value.id != 0) {
-                apiAdminMenu.update(form.value).then((res) => {
+
+                apiAdminMenu.update(filterNullAndEmptyValues(form.value)).then((res) => {
+                    console.log(res)
                     if (res.status === 200) {
                         dialogVisible.value = false
                         getList()
@@ -214,10 +215,15 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                             isCreateSuccess.value = false
                         }, 5000)
                         getMenuList()
+                        ElMessage({
+                            message: '更新成功！',
+                            'type': 'success'
+                        })
                     }
                 })
             } else {
-                apiAdminMenu.add(form.value).then((res) => {
+
+                apiAdminMenu.add(filterNullAndEmptyValues(form.value)).then((res) => {
                     if (res.status === 200) {
                         dialogVisible.value = false
                         getList()
@@ -225,6 +231,10 @@ const submitForm = async (formEl: FormInstance | undefined) => {
                         setTimeout(() => {
                             isCreateSuccess.value = false
                         }, 5000)
+                        ElMessage({
+                            message: '添加成功！',
+                            'type': 'success'
+                        })
 
                     }
                 })
@@ -255,6 +265,8 @@ function handleEdit(index: any, row: any) {
         method: row.method,
         id: row.id,
     })
+
+    console.log(form.value.sort)
     dialogVisible.value = true
 }
 
@@ -280,7 +292,7 @@ function pageChange(page: any) {
 
 <template>
     <div>
-        <el-alert title="添加更新成功" type="success" v-if="isCreateSuccess" />
+
         <page-main>
 
             <el-form :inline="true" :model="formInline" class="demo-form-inline">
@@ -309,13 +321,13 @@ function pageChange(page: any) {
             <el-table v-loading="tableLoading" :data="tableData" style="width: 100%; margin-bottom: 20px" row-key="id"
                 border default-expand-all lazy :load="load"
                 :tree-props="{ children: 'children', hasChildren: 'hasChildren' }">
-                <el-table-column prop="name" label="名称" width="150" />
+                <el-table-column prop="name" label="名称" width="250" />
                 <el-table-column prop="icon" label="图标" width="150">
                     <template #default="scope">
                         <svg-icon :name="scope.row.icon" />
                     </template>
                 </el-table-column>
-                <el-table-column prop="route_name" label="路由名称" width="150" />
+                <el-table-column prop="route_name" label="路由名称" width="300" />
                 <el-table-column prop="route_path" label="路径" width="250" />
                 <el-table-column prop="component" label="组件" width="250" />
                 <el-table-column prop="sort" label="排序" sortable width="60" />
@@ -341,7 +353,7 @@ function pageChange(page: any) {
                     </template>
                 </el-table-column>
                 <el-table-column prop="created_at" label="添加时间" sortable width="180" />
-                <el-table-column label="操作" fixed="right" width="200">
+                <el-table-column fixed="right" label="操作" width="200">
                     <template #default="scope">
                         <el-button size="small" type="primary" @click="handleEdit(scope.$index, scope.row)">编辑</el-button>
                         <el-popconfirm title="是否确定删除？" @confirm="deleteMenu(scope.row.id)">

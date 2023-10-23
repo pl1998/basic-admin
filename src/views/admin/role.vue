@@ -88,7 +88,7 @@ function getList() {
 }
 
 // 编辑
-function handleEdit(index: number, row: any) {
+function handleEdit(row: any) {
   leafKeys.value = []
   defaultExpandedKeys.value = []
   if (row.menus.length != 0) {
@@ -97,12 +97,12 @@ function handleEdit(index: number, row: any) {
       defaultExpandedKeys.value.push(next.id)
     })
   }
-  console.log('权限', defaultExpandedKeys.value, leafKeys.value)
+  form.value.id = row.id
+  form.value.name = row.name
+ 
   nextTick(() => {
     elTreeRef.value?.setCheckedKeys(leafKeys.value, true)
     centerDialogVisible.value = true
-    form.value.id = row.id
-    form.value.name = row.name
   })
 }
 
@@ -111,9 +111,9 @@ function handleSubmit() {
   if (form.value.id != 0) {
     apiAdminRole
       .update({
-        id: roles.value.id,
+        id: form.value.id,
         menu: defaultExpandedKeys.value,
-        name: roles.value.name,
+        name: form.value.name,
         status: 0,
       })
       .then((res) => {
@@ -185,12 +185,11 @@ function getPermission() {
   apiAdminMenu.getPermission().then((res) => {
     menusList.value = res.data.list
     allKeys.value = res.data.ids
-    console.log(allKeys.value, menusList.value)
+
   })
 }
 
 function nodeChange(data: any, isSelect: any, isTree: any) {
-  const nodes = defaultExpandedKeys.value
   if (isSelect) {
     defaultExpandedKeys.value.push(data.id)
   } else {
@@ -227,86 +226,46 @@ function handleDelete(id: number, status: number) {
       </el-form>
     </page-main>
     <page-main>
-      <el-table
-        v-loading="tableLoading"
-        :data="tableData"
-        style="width: 100%"
-        height="80%"
-      >
+      <el-table v-loading="tableLoading" :data="tableData" style="width: 100%" height="80%">
         <el-table-column fixed prop="name" label="角色" width="150" />
         <el-table-column prop="created_at" label="添加时间" width="200" />
         <el-table-column prop="status" label="状态" width="600">
           <template #default="scope">
-            <el-tag
-              :type="scope.row.status == 0 ? `success` : `danger`"
-              class="ml-2"
-              effect="light"
-            >
+            <el-tag :type="scope.row.status == 0 ? `success` : `danger`" class="ml-2" effect="light">
               {{ scope.row.status == 0 ? `正常` : `禁用` }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="240">
           <template #default="scope">
-            <el-button
-              size="small"
-              @click="handleEdit(scope.$index, scope.row)"
-              type="success"
-              >编辑权限</el-button
-            >
-            <el-popconfirm
-              :title="`是否` + (scope.row.status == 1 ? `启用` : `禁用`) + `?`"
-              @confirm="handleDelete(scope.row.id, scope.row.status)"
-            >
+            <el-button size="small" @click="handleEdit(scope.row)" type="success">编辑权限</el-button>
+            <el-popconfirm :title="`是否` + (scope.row.status == 1 ? `启用` : `禁用`) + `?`"
+              @confirm="handleDelete(scope.row.id, scope.row.status)">
               <template #reference>
-                <el-button
-                  size="small"
-                  :type="scope.row.status == 1 ? `success` : `danger`"
-                  >{{ scope.row.status == 1 ? `启用` : `禁用` }}</el-button
-                >
+                <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`">{{ scope.row.status == 1 ?
+                  `启用` : `禁用` }}</el-button>
               </template>
             </el-popconfirm>
           </template>
         </el-table-column>
       </el-table>
       <div class="el-row">
-        <el-pagination
-          background
-          layout="prev, pager, next"
-          :total="formInline.total"
-          @current-change="pageChange"
-        />
+        <el-pagination background layout="prev, pager, next" :total="formInline.total" @current-change="pageChange" />
       </div>
     </page-main>
 
-    <el-dialog
-      v-model="centerDialogVisible"
-      :title="title"
-      width="40%"
-      align-center
-    >
+    <el-dialog v-model="centerDialogVisible" :title="title" width="40%" align-center>
       <el-form :model="form" label-width="220px" ref="formRef">
         <el-form-item label="名称" prop="name">
-          <el-input
-            v-model="form.name"
-            :rules="[
-              { required: true, message: '名称不能为空' },
-              { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
-            ]"
-          />
+          <el-input v-model="form.name" :rules="[
+            { required: true, message: '名称不能为空' },
+            { min: 1, max: 20, message: '长度在1~20之间', trigger: 'blur' },
+          ]" />
         </el-form-item>
         <el-form-item label="权限" prop="menu">
-          <el-tree
-            ref="elTreeRef"
-            :data="menusList"
-            show-checkbox
-            node-key="id"
-            @check-change="nodeChange"
-            :default-checked-keys="defaultExpandedKeys"
-            :default-expand-all="true"
-            :check-strictly="true"
-            :props="defaultProps"
-          />
+          <el-tree ref="elTreeRef" :data="menusList" show-checkbox node-key="id" @check-change="nodeChange"
+            :default-checked-keys="defaultExpandedKeys" :default-expand-all="true" :check-strictly="true"
+            :props="defaultProps" />
         </el-form-item>
       </el-form>
       <template #footer>
