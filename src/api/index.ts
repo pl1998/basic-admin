@@ -39,10 +39,9 @@ api.interceptors.response.use(
      * 请求出错时 error 会返回错误信息
      */
     if (response.status === 200) {
-
       if (response.data.status == 401) {
         ElMessage({
-          message: "没权限访问",
+          message: '没权限访问',
           type: 'error',
         })
         return Promise.resolve(response.data)
@@ -52,7 +51,8 @@ api.interceptors.response.use(
         ElMessage.warning(response.data.message)
         return Promise.reject(response.data)
       }
-    } else {
+    }
+    else {
       useUserStore().logout()
     }
     return Promise.resolve(response.data)

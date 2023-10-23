@@ -32,7 +32,7 @@ export default ({ mode, command }) => {
       proxy: {
         '/proxy': {
           target: env.VITE_APP_API_BASEURL,
-          changeOrigin: command === 'serve' && env.VITE_OPEN_PROXY === 'true',
+          changeOrigin: true,
           rewrite: path => path.replace(/\/proxy/, ''),
         },
       },
