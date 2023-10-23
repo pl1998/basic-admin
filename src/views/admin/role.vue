@@ -63,6 +63,7 @@ watch(
   (newValue, oldValue) => {
     if (newValue.value == false) {
       defaultExpandedKeys.value = []
+      elTreeRef.value?.setCheckedKeys([], true)
       resetRole()
       title.value = '权限编辑'
     } else {
