@@ -35,7 +35,6 @@ const defaultProps = ref({
   children: 'children',
 })
 const defaultExpandedKeys = ref<any>([])
-const currentNodekey = ref([])
 
 interface rolesInterface {
   id: number
@@ -50,9 +49,9 @@ const roles = ref<rolesInterface>({
 const isShowTree = ref(true)
 const title = ref('权限编辑')
 function onSubmit() {
+  resetRole()
   isShowTree.value = false
   defaultExpandedKeys.value = []
-
   centerDialogVisible.value = true
   title.value = '添加角色'
   isShowTree.value = true
@@ -99,7 +98,7 @@ function handleEdit(row: any) {
   }
   form.value.id = row.id
   form.value.name = row.name
- 
+
   nextTick(() => {
     elTreeRef.value?.setCheckedKeys(leafKeys.value, true)
     centerDialogVisible.value = true

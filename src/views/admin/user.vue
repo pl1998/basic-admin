@@ -8,7 +8,7 @@ import { reactive, watch } from 'vue'
 import apiAdminUser from '@/api/modules/admin_user'
 import apiAdminRole from '@/api/modules/admin_role'
 import { getFilterParmas, isNumber } from '@/utils/helpers'
-import type { FormInstance, FormRules, ElMessage } from 'element-plus'
+import { FormInstance, FormRules, ElMessage } from 'element-plus'
 const ruleFormRef = ref<FormInstance>()
 const tableData = ref([])
 const tableLoading = ref(false)
@@ -157,25 +157,30 @@ function getList() {
 
 const submitForm = (formEl: FormInstance | undefined) => {
     if (form.value.id != 0) {
+
         apiAdminUser.update(form.value).then((res) => {
             dialogVisible.value = false
+          ElMessage({
+            message: res.status == 200 ? '编辑成功' : '编辑失败',
+            type: res.status == 200 ? 'success' :'warning'
+          })
+          if(res.status==200) {
             getList()
-            if (res.status == 0) {
-                alert('添加失败')
-            }
+          }
         })
     } else {
         if (!formEl) return
         formEl.validate((valid) => {
             if (valid) {
-                console.log('submit!')
                 apiAdminUser.add(form.value).then((res) => {
-
                     dialogVisible.value = false
+                  ElMessage({
+                    message: res.status == 200 ? '添加成功' : '添加失败',
+                    type: res.status == 200 ? 'success' :'warning'
+                  })
+                  if(res.status==200) {
                     getList()
-                    if (res.status == 0) {
-                        alert('添加失败')
-                    }
+                  }
                 })
             } else {
                 console.log('error submit!')
@@ -205,12 +210,21 @@ function handleEdit(row: any) {
     dialogVisible.value = true
 }
 
-function handleDelete(row: any) {
-
+function handleDelete(id: number, status: number) {
+    apiAdminUser
+        .updateStatus({ id: id, status: status === 1 ? 0 : 1 })
+        .then((res) => {
+            if(res.status == 200) {
+              ElMessage({
+                message: status == 1 ?`解禁成功` : `禁用成功`,
+                type:'success'
+              })
+                getList()
+            }
+        })
 }
-
 </script>
-          
+
 <template>
     <div>
         <page-main>
@@ -249,9 +263,13 @@ function handleDelete(row: any) {
                 <el-table-column label="操作" fixed="right" width="140">
                     <template #default="scope">
                         <el-button size="small" @click="handleEdit(scope.row)">编辑</el-button>
-                        <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`"
-                            @click="handleDelete(scope.row)">{{ scope.row.status == 1 ? `启用` :
-                                `禁用` }}</el-button>
+                      <el-popconfirm :title="`是否` + (scope.row.status == 1 ? `启用` : `禁用`) + `?`"
+                                     @confirm="handleDelete(scope.row.id, scope.row.status)">
+                        <template #reference>
+                          <el-button size="small" :type="scope.row.status == 1 ? `success` : `danger`">{{ scope.row.status == 1 ?
+                            `启用` : `禁用` }}</el-button>
+                        </template>
+                      </el-popconfirm>
                     </template>
                 </el-table-column>
             </el-table>

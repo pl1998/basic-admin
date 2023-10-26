@@ -260,6 +260,7 @@ function handleEdit(index: any, row: any) {
         route_path: row.route_path,
         component: row.component,
         sort: row.sort,
+
         hidden: row.hidden,
         type: row.type,
         method: row.method,
